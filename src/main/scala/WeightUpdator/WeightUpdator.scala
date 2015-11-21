@@ -1,8 +1,6 @@
 package WeightUpdator
 import breeze.linalg._
 import breeze.numerics._
-abstract class WeightUpdator {
-  def update(gradientMatrix:Matrix[Double],weightVector:Matrix[Double]):Unit={
-    
-  }
+trait WeightUpdator {
+  def update(gradientMatrix:DenseMatrix[Double],weightMatrix:DenseMatrix[Double]):Unit
 }

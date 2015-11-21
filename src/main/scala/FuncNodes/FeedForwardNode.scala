@@ -3,24 +3,28 @@ import breeze.linalg._
 import breeze.numerics._
 import WeightUpdator._
 import ActivationFunc._
-class FeedForwardNode(weightsMatrix:DenseMatrix[Double],updator:WeightUpdator,activeFunc:ActivationFunc,bias:Boolean) extends FuncNode{
-    
-    var gradientMatrix:DenseMatrix[Double]= DenseMatrix.zeros(weightsMatrix.rows, weightsMatrix.cols)
+class FeedForwardNode(var weightMatrix:DenseMatrix[Double],val updator:WeightUpdator=new DefaultUpdator,val activeFunc:ActivationFunc,val bias:Boolean) extends FuncNode{
+    protected var parent:FeedForwardNode=_
+    protected var child:FeedForwardNode=_
+    protected var parentActivation:DenseVector[Double]=_
+    protected var gradientMatrix:DenseMatrix[Double]= _
     def forwardPropagate():Unit={
-      var parentActivation:DenseVector[Double]={
+      parentActivation={
       if(bias){
-        DenseVector.vertcat[Double](DenseVector.ones[Double](1),parents(0).activationVector)
+        DenseVector.vertcat[Double](DenseVector.ones[Double](1),parent.activationVector)
       }else{
-        parents(0).activationVector
+        parent.activationVector
       }
       }
-      activationVector=activeFunc.active(weightsMatrix.t *parentActivation )
+      activationVector=activeFunc.active(weightMatrix.t *parentActivation )
     }
     def backPropagate():Unit={
+      errorVector = (child.weightMatrix*child.errorVector):*activeFunc.activePrime(errorVector)
+      gradientMatrix=parentActivation*errorVector.t
       
     }
     def update:Unit={
-      
+      updator.update(gradientMatrix, weightMatrix)
     }
 
 }
